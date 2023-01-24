@@ -5,14 +5,20 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
-import numpy as np
+import uuid
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SAMPLE_SPREADSHEET_ID = '1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198'
+
+gauth = GoogleAuth()
+drive = GoogleDrive(gauth)
+myuuid = uuid.uuid4()
 
 
 def main():
@@ -84,6 +90,7 @@ def main():
 
     conect_api()
     format_values(CELLS, PLOT)
+    upload_drive()
 
 
 def conect_api():
@@ -99,7 +106,7 @@ def conect_api():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                'client_secrets.json', SCOPES)
             creds = flow.run_local_server(port=0)
 
         with open('token.json', 'w') as token:
@@ -130,6 +137,7 @@ def format_values(cells, plots):
         plots[i] = list(map(float, plots[i]))
 
     plot_data(plots)
+
 
 def plot_data(data_values):
     fig, ax = plt.subplots(figsize=(10, 15))
@@ -172,8 +180,16 @@ def plot_data(data_values):
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax.grid()
-    fig.savefig("grafico.png")
-    plt.show()
+    fig.savefig(f"grafico_{myuuid}.png")
+
+
+def upload_drive():
+    upload_file_list = [f"grafico_{myuuid}.png"]
+    for upload_file in upload_file_list:
+        gfile = drive.CreateFile(
+            {'parents': [{'id': '1kZEVJ5c5G4_tooUKadmx-poC-TyxqDta'}]})
+        gfile.SetContentFile(upload_file)
+        gfile.Upload()
 
 
 if __name__ == '__main__':
