@@ -4,7 +4,7 @@
 
 ## 🔨 Funcionalidades do projeto
 - Ler a [Sheets do estudo](https://docs.google.com/spreadsheets/d/1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198/edit#gid=1455473048)
-- Pegar os valores da aba gráficos e Curvas_fusíveis
+- Pegar os valores da aba Grafico e Curvas_fusíveis
 - Criar um gráfico de escala logarítmica a partir desses valores
 - Upar a imagem com o gráfico no Drive
 
