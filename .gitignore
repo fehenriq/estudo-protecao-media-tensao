@@ -1,5 +1,6 @@
 .vscode/
 venv/
-credentials.json
+client_secrets.json
 token.json
 README_2.md
+*.png
