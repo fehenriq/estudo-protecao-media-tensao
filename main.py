@@ -45,8 +45,8 @@ def main():
     Y_51_GS_MONTANTE = 'Grafico!K55:K56'
     X_51_GS_JUSANTE = 'Grafico!J60:J61'
     Y_51_GS_JUSANTE = 'Grafico!K60:K61'
-    X_ELO = 'Curvas_fusiveis!J7:J50'
-    Y_ELO = 'Curvas_fusiveis!K7:K50'
+    X_ELO = 'Curvas_fusiveis!P59:P102'
+    Y_ELO = 'Curvas_fusiveis!Q59:Q102'
 
     x_fase_montante = []
     y_fase_montante = []
