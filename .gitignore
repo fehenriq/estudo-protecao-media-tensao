@@ -1,0 +1,5 @@
+.vscode/
+venv/
+credentials.json
+token.json
+README_2.md
