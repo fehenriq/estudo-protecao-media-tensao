@@ -1,147 +1,180 @@
+from __future__ import print_function
+import os.path
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 
-x_fase_montante = np.array([
-    202, 240, 260, 280, 300, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000,
-    3200, 3400, 3600, 3800, 4000, 4200, 4400, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500,
-    4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500, 4500
-])
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+SAMPLE_SPREADSHEET_ID = '1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198'
 
-x_neutro_montante = np.array([
-    60.6, 72, 78, 84, 90, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780, 840, 900, 960, 1020, 1080,
-    1140, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200,
-    1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200
-])
 
-x_fase_jusante = np.array([
-    29.9, 35.5, 38.5, 41.4, 44.4, 59.2, 88.8, 118.4, 148, 177.6, 207.2, 236.8, 266.4, 296, 325.6, 340, 340, 340,
-    340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340, 340,
-    340, 340, 340, 340, 340, 340, 340, 340, 340
-])
+def main():
+    X_FASE_MONTANTE = 'Grafico!P18:P66'
+    Y_FASE_MONTANTE = 'Grafico!Q18:Q66'
+    X_NEUTRO_MONTANTE = 'Grafico!T18:T66'
+    Y_NEUTRO_MONTANTE = 'Grafico!U18:U66'
+    X_FASE_JUSANTE = 'Grafico!X18:X66'
+    Y_FASE_JUSANTE = 'Grafico!Y18:Y66'
+    X_NEUTRO_JUSANTE = 'Grafico!AB18:AB66'
+    Y_NEUTRO_JUSANTE = 'Grafico!AC18:AC66'
 
-x_neutro_jusante = np.array([
-    9.1, 10.8, 11.7, 12.6, 13.5, 18, 27, 36, 45, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52,
-    52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52
-])
+    X_I_CARGA = 'Grafico!C54:E54'
+    Y_I_CARGA = 'Grafico!C55:E55'
+    X_ANSI = 'Grafico!C58:D58'
+    Y_ANSI = 'Grafico!C59:D59'
+    X_IMAG = 'Grafico!C62:D62'
+    Y_IMAG = 'Grafico!C63:D63'
+    X_ICC3F = 'Grafico!G54:H54'
+    Y_ICC3F = 'Grafico!G55:H55'
+    X_ICC1F = 'Grafico!G58:H58'
+    Y_ICC1F = 'Grafico!G59:H59'
+    X_51_GS_MONTANTE = 'Grafico!J55:J56'
+    Y_51_GS_MONTANTE = 'Grafico!K55:K56'
+    X_51_GS_JUSANTE = 'Grafico!J60:J61'
+    Y_51_GS_JUSANTE = 'Grafico!K60:K61'
+    X_ELO = 'Curvas_fusiveis!J7:J50'
+    Y_ELO = 'Curvas_fusiveis!K7:K50'
 
-y_montante = np.array([
-    140.68,	7.66,	5.32,	4.15,	3.44,	2.01,	1.26,	1,	0.86,	0.77,	0.71,	0.66,	0.62,	0.59,	0.57,	0.55,	0.53,	0.52,
-    0.5,	0.49,	0.48,	0.47,	0.46,	0.45,	0.45,	0.44,	0.43,	0.43,	0.42,	0.42,	0.41,	0.41,	0.4,	0.4,	0.39,	0.38,
-    0.38,	0.37,	0.37,	0.36,	0.35,	0.35,	0.34,	0.33,	0.33,	0.32,	0.31,	0.29,	0.01
-])
+    x_fase_montante = []
+    y_fase_montante = []
+    x_neutro_montante = []
+    y_neutro_montante = []
+    x_fase_jusante = []
+    y_fase_jusante = []
+    x_neutro_jusante = []
+    y_neutro_jusante = []
 
-y_jusante = np.array([
-    135, 6.75, 4.5, 3.38, 2.7, 1.35, 0.68, 0.45, 0.34, 0.27, 0.23, 0.19, 0.17, 0.15, 0.14, 0.12, 0.11, 0.1,
-    0.1, 0.09, 0.09, 0.08, 0.08, 0.07, 0.07, 0.06, 0.06, 0.06, 0.06, 0.05, 0.05, 0.05, 0.05, 0.05, 0.04, 0.04,
-    0.04, 0.04, 0.03, 0.03, 0.03, 0.03, 0.03, 0.02, 0.02, 0.02, 0.02, 0.01, 0.01
-])
+    x_i_carga = []
+    y_i_carga = []
+    x_ansi = []
+    y_ansi = []
+    x_imag = []
+    y_imag = []
+    x_icc3f = []
+    y_icc3f = []
+    x_icc1f = []
+    y_icc1f = []
+    x_51_gs_montante = []
+    y_51_gs_montante = []
+    x_51_gs_jusante = []
+    y_51_gs_jusante = []
+    x_elo = []
+    y_elo = []
 
-x_carga = np.array([
-    22.74, 22.74
-])
+    CELLS = [
+        X_FASE_MONTANTE, Y_FASE_MONTANTE, X_NEUTRO_MONTANTE, Y_NEUTRO_MONTANTE,
+        X_FASE_JUSANTE, Y_FASE_JUSANTE, X_NEUTRO_JUSANTE, Y_NEUTRO_JUSANTE, X_I_CARGA,
+        Y_I_CARGA, X_ANSI, Y_ANSI, X_IMAG, Y_IMAG, X_ICC3F, Y_ICC3F, X_ICC1F, Y_ICC1F,
+        X_51_GS_MONTANTE, Y_51_GS_MONTANTE, X_51_GS_JUSANTE, Y_51_GS_JUSANTE, X_ELO, Y_ELO
+    ]
 
-y_carga = np.array([
-    1, 1.05
-])
+    PLOT = [
+        x_fase_montante, y_fase_montante, x_neutro_montante, y_neutro_montante,
+        x_fase_jusante, y_fase_jusante, x_neutro_jusante, y_neutro_jusante, x_i_carga,
+        y_i_carga, x_ansi, y_ansi, x_imag, y_imag, x_icc3f, y_icc3f, x_icc1f, y_icc1f,
+        x_51_gs_montante, y_51_gs_montante, x_51_gs_jusante, y_51_gs_jusante, x_elo, y_elo
+    ]
 
-x_ICC3F = np.array([
-    10000, 10100
-])
+    conect_api()
+    format_values(CELLS, PLOT)
 
-y_ICC3F = np.array([
-    3, 3.1
-])
 
-x_ANSI = np.array([
-    1.35, 11.35
-])
+def conect_api():
+    global sheet
 
-y_ANSI = np.array([
-    5, 5.105
-])
+    creds = None
 
-x_ICC1F = np.array([
-    4000, 4100
-])
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
-y_ICC1F = np.array([
-    3, 3.1
-])
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
 
-x_IMAG = np.array([
-    323.9, 313.9
-])
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
 
-y_IMAG = np.array([
-    0.1, 0.095
-])
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+    except:
+        DISCOVERY_SERVICE_URL = 'https://sheets.googleapis.com/$discovery/rest?version=v4'
+        service = build(
+            'sheets', 'v4', credentials=creds,
+            discoveryServiceUrl=DISCOVERY_SERVICE_URL
+        )
 
-x_51_GS_MONTANTE = np.array([
-    12, 36
-])
+    sheet = service.spreadsheets()
 
-y_51_GS_MONTANTE = np.array([
-    6, 6
-])
 
-x_51_GS_JUSANTE = np.array([
-    8, 24
-])
+def format_values(cells, plots):
+    i = 0
+    for i in range(len(cells)):
+        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                    range=cells[i]).execute()
+        values = result.get('values', [])
 
-y_51_GS_JUSANTE = np.array([
-    4, 4
-])
+        for value in values:
+            plots[i].append(str(value[0]).replace(',', '.'))
 
-x_elo = np.array([
-    23.69, 23.69, 24, 24.48, 24.63, 24.8, 25.04, 25.45, 25.78, 26.3, 27.24, 28.71, 30, 31.41, 31.84, 32.73,
-    33.57, 34.74, 35.89, 37.31, 39.99, 45.08, 48.98, 54.71, 56.88, 58.75, 61.52, 65, 69.5, 77.9, 89.56, 110.22,
-    127.95, 161.08, 171.79, 183.99, 201.84, 215.77, 245.47, 289.72, 353.09, 486.77, 600, 664.56
-])
+        plots[i] = list(map(float, plots[i]))
 
-y_elo = np.array([
-    300, 200, 150, 100, 90, 80, 70, 60, 50, 40, 30, 20, 15, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1.5, 1, 0.9, 0.804, 0.7,
-    0.6, 0.5, 0.4, 0.3, 0.2, 0.15, 0.1, 0.09, 0.08, 0.068, 0.059, 0.05, 0.04, 0.03, 0.02, 0.015, 0.013
-])
+    plot_data(plots)
 
-fig, ax = plt.subplots(figsize=(10, 15))
-ax.loglog(x_fase_montante, y_montante,
-          label="FASE MONTANTE", linestyle="-", color="red")
-ax.loglog(x_neutro_montante, y_montante, label="NEUTRO MONTANTE",
-          linestyle="--", color="dodgerblue")
-ax.loglog(x_fase_jusante, y_jusante, label="FASE JUSANTE",
-          linestyle="-", color="black")
-ax.loglog(x_neutro_jusante, y_jusante, label="NEUTRO JUSANTE",
-          linestyle="--", color="limegreen")
-ax.loglog(x_carga, y_carga, marker="o", label="I CARGA",
-          linestyle=":", color="orchid")
-ax.loglog(x_ICC3F, y_ICC3F, marker="o", label="ICC3F",
-          linestyle=":", color="darkgreen")
-ax.loglog(x_ANSI, y_ANSI, label="ANSI", linestyle=":", color="royalblue")
-ax.loglog(x_ICC1F, y_ICC1F, marker="o", label="ICC1F",
-          linestyle=":", color="darkorange")
-ax.loglog(x_IMAG, y_IMAG, marker="o", label="IMAG",
-          linestyle=":", color="fuchsia")
-ax.loglog(x_51_GS_MONTANTE, y_51_GS_MONTANTE,
-          label="51 GS MONTANTE", linestyle=":", color="darkred")
-ax.loglog(x_51_GS_JUSANTE, y_51_GS_JUSANTE,
-          label="51 GS JUSANTE", linestyle=":", color="orange")
-ax.loglog(x_elo, y_elo, label="ELO", linestyle="-", color="brown")
+def plot_data(data_values):
+    fig, ax = plt.subplots(figsize=(10, 15))
+    ax.loglog(data_values[0], data_values[1], label="FASE MONTANTE",
+              linestyle="-", color="red")
+    ax.loglog(data_values[2], data_values[3], label="NEUTRO MONTANTE",
+              linestyle="--", color="dodgerblue")
+    ax.loglog(data_values[4], data_values[5], label="FASE JUSANTE",
+              linestyle="-", color="black")
+    ax.loglog(data_values[6], data_values[7], label="NEUTRO JUSANTE",
+              linestyle="--", color="limegreen")
+    ax.loglog(data_values[8], data_values[9], marker="o", label="I CARGA",
+              linestyle=":", color="orchid")
+    ax.loglog(data_values[10], data_values[11], marker="o", label="ANSI",
+              linestyle=":", color="royalblue")
+    ax.loglog(data_values[12], data_values[13], marker="o", label="IMAG",
+              linestyle=":", color="fuchsia")
+    ax.loglog(data_values[14], data_values[15], marker="o", label="ICC3F",
+              linestyle=":", color="darkgreen")
+    ax.loglog(data_values[16], data_values[17], marker="o", label="ICC1F",
+              linestyle=":", color="darkorange")
+    ax.loglog(data_values[18], data_values[19], label="51 GS MONTANTE",
+              linestyle=":", color="darkred")
+    ax.loglog(data_values[20], data_values[21], label="51 GS JUSANTE",
+              linestyle=":", color="orange")
+    ax.loglog(data_values[22], data_values[23], label="ELO",
+              linestyle="-", color="brown")
 
-ax.set(
-    xlabel="Corrente (A)",
-    ylabel="Tempo (s)",
-    xlim=(0.1, 10000),
-    ylim=(0.01, 1000),
-    title="COORDENOGRAMA FASES E NEUTRO\nDISJUNTOR GERAL DA CABINE X CONCESSIONÁRIA"
-)
+    ax.set(
+        xlabel="Corrente (A)",
+        ylabel="Tempo (s)",
+        xlim=(0.1, 10000),
+        ylim=(0.01, 1000),
+        title="COORDENOGRAMA FASES E NEUTRO\nDISJUNTOR GERAL DA CABINE X CONCESSIONÁRIA"
+    )
 
-ax.xaxis.set_major_formatter(ScalarFormatter())
-ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-box = ax.get_position()
-ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-ax.grid()
-fig.savefig("grafico.png")
-plt.show()
+    ax.xaxis.set_major_formatter(ScalarFormatter())
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.grid()
+    fig.savefig("grafico.png")
+    plt.show()
+
+
+if __name__ == '__main__':
+    main()
