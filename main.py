@@ -11,14 +11,12 @@ from pydrive.drive import GoogleDrive
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
-import uuid
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SAMPLE_SPREADSHEET_ID = '1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198'
 
 gauth = GoogleAuth()
 drive = GoogleDrive(gauth)
-myuuid = uuid.uuid4()
 
 def main():
     X_FASE_MONTANTE = 'Grafico!P18:P66'
