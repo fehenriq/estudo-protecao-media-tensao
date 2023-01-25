@@ -42,5 +42,5 @@ pip install -r requirements.txt
 ## 📝 Melhorias
 - Acionador para ocultar e mostrar páginas ✔️
 - Gráfico logarítmico ✔️
-- Download e upload do projeto 🚧
+- Exportação e importação do projeto ✔️
 - Bloquear acesso ao Google Apps Script ❌
