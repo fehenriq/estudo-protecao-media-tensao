@@ -11,12 +11,21 @@ from pydrive.drive import GoogleDrive
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
+import PySimpleGUI as sg
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SAMPLE_SPREADSHEET_ID = '1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198'
 
 gauth = GoogleAuth()
 drive = GoogleDrive(gauth)
+
+ids = [
+    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
+    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
+    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
+    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
+    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198"
+]
+
 
 def main():
     X_FASE_MONTANTE = 'Grafico!P18:P66'
@@ -78,7 +87,7 @@ def main():
         X_51_GS_MONTANTE, Y_51_GS_MONTANTE, X_51_GS_JUSANTE, Y_51_GS_JUSANTE, X_ELO, Y_ELO
     ]
 
-    PLOT = [
+    PLOTS = [
         x_fase_montante, y_fase_montante, x_neutro_montante, y_neutro_montante,
         x_fase_jusante, y_fase_jusante, x_neutro_jusante, y_neutro_jusante, x_i_carga,
         y_i_carga, x_ansi, y_ansi, x_imag, y_imag, x_icc3f, y_icc3f, x_icc1f, y_icc1f,
@@ -87,16 +96,64 @@ def main():
 
     conect_api()
 
-    SAMPLE_RANGE_NAME = 'Impressao!P22'
-    global title
+    logins = ["1", "2", "3", "4", "5"]
+    password = "web2022"
 
-    result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                range=SAMPLE_RANGE_NAME).execute()
-    title_value = result.get('values', [])
-    title = title_value[0][0]
+    sg.theme("LightBlue2")
+    layout = [
+        [sg.Text("Login", size=(10, 1), font=10),
+         sg.InputText(key='-usrnm-', font=10)],
+        [sg.Text("Senha", size=(10, 1), font=10), sg.InputText(
+            key='-pwd-', password_char='*', font=10)],
+        [sg.Button('Login')]
+    ]
     
-    format_values(CELLS, PLOT)
-    upload_drive()
+    layout_graph = [
+        [sg.Text("Gráfico estudo proteção MT", font=10)],
+        [sg.Button('Mostrar'), sg.Button('Salvar')]
+    ]
+
+    window = sg.Window("Login", layout)
+    window_graph = sg.Window("Gráfico", layout_graph)
+
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED:
+            break
+        else:
+            if event == "Login":
+                if values['-usrnm-'] in logins and values['-pwd-'] == password:
+                    window.close()
+                    while True:
+                        event_graph, values_graph = window_graph.read()
+                        if event_graph == sg.WIN_CLOSED:
+                            break
+                        elif event_graph == "Mostrar":
+                            log = login(values['-usrnm-'])
+                            sg.popup_auto_close("Aguarda o gráfico ser gerado.")
+                            format_values(CELLS, PLOTS, log)
+                        elif event_graph == "Salvar":
+                            log = login(values['-usrnm-'])
+                            sg.popup_auto_close("Aguarda o gráfico ser gerado e upado.")
+                            format_values(CELLS, PLOTS, log)
+                            upload_drive()
+                elif values['-usrnm-'] not in logins or values['-pwd-'] != password:
+                    sg.popup("Login ou senha inválida. Tente novamente")
+                    
+
+def login(numero):
+    if numero == "1":
+        SAMPLE_SPREADSHEET_ID = ids[0]
+    elif numero == "2":
+        SAMPLE_SPREADSHEET_ID = ids[1]
+    elif numero == "3":
+        SAMPLE_SPREADSHEET_ID = ids[2]
+    elif numero == "4":
+        SAMPLE_SPREADSHEET_ID = ids[3]
+    elif numero == "5":
+        SAMPLE_SPREADSHEET_ID = ids[4]
+
+    return SAMPLE_SPREADSHEET_ID
 
 
 def conect_api():
@@ -130,10 +187,10 @@ def conect_api():
     sheet = service.spreadsheets()
 
 
-def format_values(cells, plots):
+def format_values(cells, plots, sheet_id):
     i = 0
     for i in range(len(cells)):
-        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+        result = sheet.values().get(spreadsheetId=sheet_id,
                                     range=cells[i]).execute()
         values = result.get('values', [])
 
@@ -142,10 +199,18 @@ def format_values(cells, plots):
 
         plots[i] = list(map(float, plots[i]))
 
-    plot_data(plots)
+    SAMPLE_RANGE_NAME = 'Impressao!P22'
+    global title
+
+    result = sheet.values().get(spreadsheetId=sheet_id,
+                                range=SAMPLE_RANGE_NAME).execute()
+    title_value = result.get('values', [])
+    title = title_value[0][0]
+
+    plot_data(plots, title)
 
 
-def plot_data(data_values):
+def plot_data(data_values, title):
     fig, ax = plt.subplots(figsize=(10, 15))
     ax.loglog(data_values[0], data_values[1], label="FASE MONTANTE",
               linestyle="-", color="red")
@@ -187,13 +252,14 @@ def plot_data(data_values):
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax.grid()
     fig.savefig(f"grafico_{title}.png")
+    plt.show()
 
 
 def upload_drive():
     upload_file_list = [f"grafico_{title}.png"]
     for upload_file in upload_file_list:
         gfile = drive.CreateFile(
-            {'parents': [{'id': '1kZEVJ5c5G4_tooUKadmx-poC-TyxqDta'}]})
+            {'parents': [{'id': '1Hkuq7cxbmUtFgb34E7rO-EjVYjvaWdqb'}]})
         gfile.SetContentFile(upload_file)
         gfile.Upload()
 
