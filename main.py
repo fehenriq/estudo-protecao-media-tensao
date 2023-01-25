@@ -20,7 +20,6 @@ gauth = GoogleAuth()
 drive = GoogleDrive(gauth)
 myuuid = uuid.uuid4()
 
-
 def main():
     X_FASE_MONTANTE = 'Grafico!P18:P66'
     Y_FASE_MONTANTE = 'Grafico!Q18:Q66'
@@ -89,6 +88,15 @@ def main():
     ]
 
     conect_api()
+
+    SAMPLE_RANGE_NAME = 'Impressao!P22'
+    global title
+
+    result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                range=SAMPLE_RANGE_NAME).execute()
+    title_value = result.get('values', [])
+    title = title_value[0][0]
+    
     format_values(CELLS, PLOT)
     upload_drive()
 
@@ -180,11 +188,11 @@ def plot_data(data_values):
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax.grid()
-    fig.savefig(f"grafico_{myuuid}.png")
+    fig.savefig(f"grafico_{title}.png")
 
 
 def upload_drive():
-    upload_file_list = [f"grafico_{myuuid}.png"]
+    upload_file_list = [f"grafico_{title}.png"]
     for upload_file in upload_file_list:
         gfile = drive.CreateFile(
             {'parents': [{'id': '1kZEVJ5c5G4_tooUKadmx-poC-TyxqDta'}]})

@@ -13,7 +13,6 @@
 - `Matplotlib`
 - `API do Google Sheets`
 - `API do Google Drive`
-- `UUID` 
 
 
 ## 🛠️ Para abrir e rodar o projeto
