@@ -12,11 +12,14 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
 import PySimpleGUI as sg
+from dotenv import load_dotenv
+
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 gauth = GoogleAuth()
 drive = GoogleDrive(gauth)
+load_dotenv()
 
 ids = [
     "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
@@ -97,7 +100,7 @@ def main():
     conect_api()
 
     logins = ["1", "2", "3", "4", "5"]
-    password = "web2022"
+    password = str(os.getenv("password"))
 
     sg.theme("LightBlue2")
     layout = [
@@ -110,7 +113,7 @@ def main():
     
     layout_graph = [
         [sg.Text("Gráfico estudo proteção MT", font=10)],
-        [sg.Button('Mostrar'), sg.Button('Salvar')]
+        [sg.Button('Gerar'), sg.Button('Salvar')]
     ]
 
     window = sg.Window("Login", layout)
@@ -128,15 +131,14 @@ def main():
                         event_graph, values_graph = window_graph.read()
                         if event_graph == sg.WIN_CLOSED:
                             break
-                        elif event_graph == "Mostrar":
-                            log = login(values['-usrnm-'])
-                            sg.popup_auto_close("Aguarda o gráfico ser gerado.")
-                            format_values(CELLS, PLOTS, log)
+                        elif event_graph == "Gerar":
+                            sheet_id = login(values['-usrnm-'])
+                            sg.popup_auto_close("Aguarde o gráfico ser gerado.")
+                            format_values(CELLS, PLOTS, sheet_id)
                         elif event_graph == "Salvar":
-                            log = login(values['-usrnm-'])
-                            sg.popup_auto_close("Aguarda o gráfico ser gerado e upado.")
-                            format_values(CELLS, PLOTS, log)
-                            upload_drive()
+                            sheet_id = login(values['-usrnm-'])
+                            sg.popup_auto_close("Aguarde o gráfico ser upado.")
+                            upload_drive(sheet_id)
                 elif values['-usrnm-'] not in logins or values['-pwd-'] != password:
                     sg.popup("Login ou senha inválida. Tente novamente")
                     
@@ -207,10 +209,10 @@ def format_values(cells, plots, sheet_id):
     title_value = result.get('values', [])
     title = title_value[0][0]
 
-    plot_data(plots, title)
+    plot_data(plots)
 
 
-def plot_data(data_values, title):
+def plot_data(data_values):
     fig, ax = plt.subplots(figsize=(10, 15))
     ax.loglog(data_values[0], data_values[1], label="FASE MONTANTE",
               linestyle="-", color="red")
@@ -255,11 +257,19 @@ def plot_data(data_values, title):
     plt.show()
 
 
-def upload_drive():
+def upload_drive(sheet_id):
+    SAMPLE_RANGE_NAME = 'Dados!AF42'
+
+    result = sheet.values().get(spreadsheetId=sheet_id,
+                                range=SAMPLE_RANGE_NAME).execute()
+    folder_value = result.get('values', [])
+    folder_id = folder_value[0][0]
+    folder = folder_id[43:]
+    
     upload_file_list = [f"grafico_{title}.png"]
     for upload_file in upload_file_list:
         gfile = drive.CreateFile(
-            {'parents': [{'id': '1Hkuq7cxbmUtFgb34E7rO-EjVYjvaWdqb'}]})
+            {'parents': [{'id': folder}]})
         gfile.SetContentFile(upload_file)
         gfile.Upload()
 
