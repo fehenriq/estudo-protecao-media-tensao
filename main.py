@@ -102,7 +102,7 @@ def main():
     logins = ["1", "2", "3", "4", "5"]
     password = str(os.getenv("password"))
 
-    sg.theme("LightBlue2")
+    sg.theme("Reddit")
     layout = [
         [sg.Text("Login", size=(10, 1), font=10),
          sg.InputText(key='-usrnm-', font=10)],
