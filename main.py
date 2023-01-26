@@ -12,14 +12,11 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
 import PySimpleGUI as sg
-from dotenv import load_dotenv
-
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 gauth = GoogleAuth()
 drive = GoogleDrive(gauth)
-load_dotenv()
 
 ids = [
     "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
@@ -57,32 +54,6 @@ def main():
     X_ELO = 'Curvas_fusiveis!P59:P102'
     Y_ELO = 'Curvas_fusiveis!Q59:Q102'
 
-    x_fase_montante = []
-    y_fase_montante = []
-    x_neutro_montante = []
-    y_neutro_montante = []
-    x_fase_jusante = []
-    y_fase_jusante = []
-    x_neutro_jusante = []
-    y_neutro_jusante = []
-
-    x_i_carga = []
-    y_i_carga = []
-    x_ansi = []
-    y_ansi = []
-    x_imag = []
-    y_imag = []
-    x_icc3f = []
-    y_icc3f = []
-    x_icc1f = []
-    y_icc1f = []
-    x_51_gs_montante = []
-    y_51_gs_montante = []
-    x_51_gs_jusante = []
-    y_51_gs_jusante = []
-    x_elo = []
-    y_elo = []
-
     CELLS = [
         X_FASE_MONTANTE, Y_FASE_MONTANTE, X_NEUTRO_MONTANTE, Y_NEUTRO_MONTANTE,
         X_FASE_JUSANTE, Y_FASE_JUSANTE, X_NEUTRO_JUSANTE, Y_NEUTRO_JUSANTE, X_I_CARGA,
@@ -90,17 +61,10 @@ def main():
         X_51_GS_MONTANTE, Y_51_GS_MONTANTE, X_51_GS_JUSANTE, Y_51_GS_JUSANTE, X_ELO, Y_ELO
     ]
 
-    PLOTS = [
-        x_fase_montante, y_fase_montante, x_neutro_montante, y_neutro_montante,
-        x_fase_jusante, y_fase_jusante, x_neutro_jusante, y_neutro_jusante, x_i_carga,
-        y_i_carga, x_ansi, y_ansi, x_imag, y_imag, x_icc3f, y_icc3f, x_icc1f, y_icc1f,
-        x_51_gs_montante, y_51_gs_montante, x_51_gs_jusante, y_51_gs_jusante, x_elo, y_elo
-    ]
-
     conect_api()
 
     logins = ["1", "2", "3", "4", "5"]
-    password = str(os.getenv("password"))
+    password = "web2023"
 
     sg.theme("Reddit")
     layout = [
@@ -110,7 +74,7 @@ def main():
             key='-pwd-', password_char='*', font=10)],
         [sg.Button('Login')]
     ]
-    
+
     layout_graph = [
         [sg.Text("Gráfico estudo proteção MT", font=10)],
         [sg.Button('Gerar'), sg.Button('Salvar')]
@@ -133,15 +97,16 @@ def main():
                             break
                         elif event_graph == "Gerar":
                             sheet_id = login(values['-usrnm-'])
-                            sg.popup_auto_close("Aguarde o gráfico ser gerado.")
-                            format_values(CELLS, PLOTS, sheet_id)
+                            sg.popup_auto_close(
+                                "Aguarde o gráfico ser gerado.")
+                            format_values(CELLS, sheet_id)
                         elif event_graph == "Salvar":
                             sheet_id = login(values['-usrnm-'])
                             sg.popup_auto_close("Aguarde o gráfico ser upado.")
                             upload_drive(sheet_id)
                 elif values['-usrnm-'] not in logins or values['-pwd-'] != password:
                     sg.popup("Login ou senha inválida. Tente novamente")
-                    
+
 
 def login(numero):
     if numero == "1":
@@ -189,7 +154,40 @@ def conect_api():
     sheet = service.spreadsheets()
 
 
-def format_values(cells, plots, sheet_id):
+def format_values(cells, sheet_id):
+    x_fase_montante = []
+    y_fase_montante = []
+    x_neutro_montante = []
+    y_neutro_montante = []
+    x_fase_jusante = []
+    y_fase_jusante = []
+    x_neutro_jusante = []
+    y_neutro_jusante = []
+
+    x_i_carga = []
+    y_i_carga = []
+    x_ansi = []
+    y_ansi = []
+    x_imag = []
+    y_imag = []
+    x_icc3f = []
+    y_icc3f = []
+    x_icc1f = []
+    y_icc1f = []
+    x_51_gs_montante = []
+    y_51_gs_montante = []
+    x_51_gs_jusante = []
+    y_51_gs_jusante = []
+    x_elo = []
+    y_elo = []
+
+    PLOTS = [
+        x_fase_montante, y_fase_montante, x_neutro_montante, y_neutro_montante,
+        x_fase_jusante, y_fase_jusante, x_neutro_jusante, y_neutro_jusante, x_i_carga,
+        y_i_carga, x_ansi, y_ansi, x_imag, y_imag, x_icc3f, y_icc3f, x_icc1f, y_icc1f,
+        x_51_gs_montante, y_51_gs_montante, x_51_gs_jusante, y_51_gs_jusante, x_elo, y_elo
+    ]
+
     i = 0
     for i in range(len(cells)):
         result = sheet.values().get(spreadsheetId=sheet_id,
@@ -197,9 +195,9 @@ def format_values(cells, plots, sheet_id):
         values = result.get('values', [])
 
         for value in values:
-            plots[i].append(str(value[0]).replace(',', '.'))
+            PLOTS[i].append(str(value[0]).replace(',', '.'))
 
-        plots[i] = list(map(float, plots[i]))
+        PLOTS[i] = list(map(float, PLOTS[i]))
 
     SAMPLE_RANGE_NAME = 'Impressao!P22'
     global title
@@ -209,7 +207,7 @@ def format_values(cells, plots, sheet_id):
     title_value = result.get('values', [])
     title = title_value[0][0]
 
-    plot_data(plots)
+    plot_data(PLOTS)
 
 
 def plot_data(data_values):
@@ -222,15 +220,15 @@ def plot_data(data_values):
               linestyle="-", color="black")
     ax.loglog(data_values[6], data_values[7], label="NEUTRO JUSANTE",
               linestyle="--", color="limegreen")
-    ax.loglog(data_values[8], data_values[9], marker="o", label="I CARGA",
+    ax.loglog(data_values[8], data_values[9], marker=".", label="I CARGA",
               linestyle=":", color="orchid")
-    ax.loglog(data_values[10], data_values[11], marker="o", label="ANSI",
+    ax.loglog(data_values[10], data_values[11], marker=".", label="ANSI",
               linestyle=":", color="royalblue")
-    ax.loglog(data_values[12], data_values[13], marker="o", label="IMAG",
+    ax.loglog(data_values[12], data_values[13], marker=".", label="IMAG",
               linestyle=":", color="fuchsia")
-    ax.loglog(data_values[14], data_values[15], marker="o", label="ICC3F",
+    ax.loglog(data_values[14], data_values[15], marker=".", label="ICC3F",
               linestyle=":", color="darkgreen")
-    ax.loglog(data_values[16], data_values[17], marker="o", label="ICC1F",
+    ax.loglog(data_values[16], data_values[17], marker=".", label="ICC1F",
               linestyle=":", color="darkorange")
     ax.loglog(data_values[18], data_values[19], label="51 GS MONTANTE",
               linestyle=":", color="darkred")
@@ -253,7 +251,7 @@ def plot_data(data_values):
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax.grid()
-    fig.savefig(f"grafico_{title}.png")
+    fig.savefig(f"{title}_COORDENOGRAMA.png")
     plt.show()
 
 
@@ -265,8 +263,8 @@ def upload_drive(sheet_id):
     folder_value = result.get('values', [])
     folder_id = folder_value[0][0]
     folder = folder_id[43:]
-    
-    upload_file_list = [f"grafico_{title}.png"]
+
+    upload_file_list = [f"{title}_COORDENOGRAMA.png"]
     for upload_file in upload_file_list:
         gfile = drive.CreateFile(
             {'parents': [{'id': folder}]})
