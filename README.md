@@ -11,13 +11,14 @@
 ## ✔️ Técnicas e tecnologias utilizadas
 - `Python`
 - `Matplotlib`
+- `PySimpleGUI`
 - `API do Google Sheets`
 - `API do Google Drive`
 
 
 ## 🛠️ Para abrir e rodar o projeto
 
-### Lembre-se de ter seu arquivo de credenciais do Google na raiz do projeto
+### Lembre-se de ter seu arquivo de credenciais do Google na raiz do projeto e suas variáveis dotenv
 
 ```bash
 git clone https://github.com/fehenriq/coordenograma-estudo-protecao-mt.git
