@@ -1,5 +1,6 @@
 .vscode/
 venv/
+.env
 client_secrets.json
 token.json
 README_2.md
