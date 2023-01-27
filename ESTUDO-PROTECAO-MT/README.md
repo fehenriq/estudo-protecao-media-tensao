@@ -29,11 +29,11 @@ cd coordenograma-estudo-protecao-mt
 ```
 
 ```bash
-python3 -m venv .venv #Windows: python -m venv .venv
+python3 -m venv .venv
 ```
 
 ```bash
-source .venv/bin/activate #Windows: .venv\Scripts\activate
+source .venv/bin/activate
 ```
 
 ```bash
