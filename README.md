@@ -18,7 +18,7 @@
 
 ## 🛠️ Para abrir e rodar o projeto
 
-### Lembre-se de ter seu arquivo de credenciais do Google na raiz do projeto e suas variáveis dotenv
+### Lembre-se de ter seu arquivo de credenciais do Google na raiz do projeto
 
 ```bash
 git clone https://github.com/fehenriq/coordenograma-estudo-protecao-mt.git
