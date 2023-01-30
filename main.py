@@ -37,20 +37,20 @@ def main():
     X_NEUTRO_JUSANTE = 'Grafico!AB18:AB66'
     Y_NEUTRO_JUSANTE = 'Grafico!AC18:AC66'
 
-    X_I_CARGA = 'Grafico!C54:E54'
-    Y_I_CARGA = 'Grafico!C55:E55'
-    X_ANSI = 'Grafico!C58:D58'
-    Y_ANSI = 'Grafico!C59:D59'
-    X_IMAG = 'Grafico!C62:D62'
-    Y_IMAG = 'Grafico!C63:D63'
-    X_ICC3F = 'Grafico!G54:H54'
-    Y_ICC3F = 'Grafico!G55:H55'
-    X_ICC1F = 'Grafico!G58:H58'
-    Y_ICC1F = 'Grafico!G59:H59'
-    X_51_GS_MONTANTE = 'Grafico!J55:J56'
-    Y_51_GS_MONTANTE = 'Grafico!K55:K56'
-    X_51_GS_JUSANTE = 'Grafico!J60:J61'
-    Y_51_GS_JUSANTE = 'Grafico!K60:K61'
+    X_I_CARGA = 'Grafico!B55:B56'
+    Y_I_CARGA = 'Grafico!C55:C56'
+    X_ANSI = 'Grafico!B60:B61'
+    Y_ANSI = 'Grafico!C60:C61'
+    X_IMAG = 'Grafico!B65:B66'
+    Y_IMAG = 'Grafico!C65:C66'
+    X_ICC3F = 'Grafico!E55:E56'
+    Y_ICC3F = 'Grafico!F55:F56'
+    X_ICC1F = 'Grafico!E60:E61'
+    Y_ICC1F = 'Grafico!F60:F61'
+    X_51_GS_MONTANTE = 'Grafico!H55:H56'
+    Y_51_GS_MONTANTE = 'Grafico!I55:I56'
+    X_51_GS_JUSANTE = 'Grafico!H60:H61'
+    Y_51_GS_JUSANTE = 'Grafico!I60:I61'
     X_ELO = 'Curvas_fusiveis!P59:P102'
     Y_ELO = 'Curvas_fusiveis!Q59:Q102'
 
@@ -251,6 +251,7 @@ def plot_data(data_values):
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax.grid()
+    ax.grid(which='minor', axis='both', linestyle='-')
     fig.savefig(f"{title}_COORDENOGRAMA.png")
     plt.show()
 
