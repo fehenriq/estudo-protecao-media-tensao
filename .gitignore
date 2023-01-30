@@ -1,7 +1,14 @@
-.vscode/
+# Virtual environment 
 venv/
+.venv/
 .env
-client_secrets.json
-token.json
-README_2.md
+
+# Production build
+build/
+dist/
+
+# Other
+*.json
 *.png
+*.spec
+.vscode/
