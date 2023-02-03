@@ -262,7 +262,10 @@ def upload_drive(sheet_id):
                                 range=SAMPLE_RANGE_NAME).execute()
     folder_value = result.get('values', [])
     folder_id = folder_value[0][0]
-    folder = folder_id[43:]
+    folder = folder_id[39:]
+    
+    if len(folder) > 33:
+        folder = folder[4:]
 
     upload_file_list = [f"{title}_COORDENOGRAMA.png"]
     for upload_file in upload_file_list:
