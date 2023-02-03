@@ -45,8 +45,8 @@ def main():
     Y_IMAG = 'Grafico!C65:C66'
     X_ICC3F = 'Grafico!E55:E56'
     Y_ICC3F = 'Grafico!F55:F56'
-    X_ICC1F = 'Grafico!E60:E61'
-    Y_ICC1F = 'Grafico!F60:F61'
+    X_ICC1F = 'Grafico!E65:E66'
+    Y_ICC1F = 'Grafico!F65:F66'
     X_51_GS_MONTANTE = 'Grafico!H55:H56'
     Y_51_GS_MONTANTE = 'Grafico!I55:I56'
     X_51_GS_JUSANTE = 'Grafico!H60:H61'
@@ -195,7 +195,10 @@ def format_values(cells, sheet_id):
         values = result.get('values', [])
 
         for value in values:
-            PLOTS[i].append(str(value[0]).replace(',', '.'))
+            if value:
+                PLOTS[i].append(str(value[0]).replace(',', '.'))
+            else:
+                pass
 
         PLOTS[i] = list(map(float, PLOTS[i]))
 
