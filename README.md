@@ -29,6 +29,12 @@ cd coordenograma-estudo-protecao-mt
 ```
 
 ```bash
+code .
+```
+
+### Agora no terminal integrado, execute os comandos:
+
+```bash
 python3 -m venv .venv #Windows: python -m venv .venv
 ```
 
