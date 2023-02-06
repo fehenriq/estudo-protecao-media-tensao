@@ -120,16 +120,16 @@ def main():
     username_label = Label(root, text="Usuário", font=40).place(x=40, y=150)
     username = StringVar()
     username_entry = Entry(root, textvariable=username,
-                           font=40, width=45).place(x=110, y=150)
+                           font=40, width=40).place(x=110, y=150)
 
     password_label = Label(root, text="Senha", font=40).place(x=40, y=200)
     password = StringVar()
     password_entry = Entry(root, textvariable=password,
-                           show='*', font=40, width=45).place(x=110, y=200)
+                           show='*', font=40, width=40).place(x=110, y=200)
 
     validate_login = partial(validate_login, username, password)
 
-    login_button = Button(root, text="Entrar", font=40, width=50,
+    login_button = Button(root, text="Entrar", font=40, width=46,
                           command=lambda:validate_login()).place(x=40, y=250)
 
     sv_ttk.set_theme("light")
