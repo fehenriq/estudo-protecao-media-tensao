@@ -11,23 +11,29 @@ from pydrive.drive import GoogleDrive
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
-import PySimpleGUI as sg
+from tkinter import *
+from functools import partial
+import sv_ttk
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+SAMPLE_SPREADSHEET_ID = ""
 
 gauth = GoogleAuth()
 drive = GoogleDrive(gauth)
 
 ids = [
-    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
-    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
-    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
-    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
-    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198"
+    "1mpdTK2TrMCdBXe6IuPfZtPNlXa1mWlVg7Lv27wao_yA",
+    "1b3KduQ6oO9Tr09WLuAA5wlMAi9rg-aBZaOH8WhF-MCk",
+    "1RKZIwhEAFty8he_1bSIEc5LugZryUy8-fI0VcGAGsSw",
+    "1LrxnhH94tWMGupTEGEqna9ZjlBc9U1YlU6Xb-T2rdTE",
+    "1Jr4txdLKzSGx1nO33XK2sMcqxJ95Y0wSPDDiJa0ra1Y"
 ]
 
 
 def main():
+    global sheet_id
+    global CELLS
+    
     X_FASE_MONTANTE = 'Grafico!P18:P66'
     Y_FASE_MONTANTE = 'Grafico!Q18:Q66'
     X_NEUTRO_MONTANTE = 'Grafico!T18:T66'
@@ -64,63 +70,83 @@ def main():
     conect_api()
 
     logins = ["1", "2", "3", "4", "5"]
-    password = "web2023"
+    passwords = "web2023"
 
-    sg.theme("Reddit")
-    layout = [
-        [sg.Text("Login", size=(10, 1), font=10),
-         sg.InputText(key='-usrnm-', font=10)],
-        [sg.Text("Senha", size=(10, 1), font=10), sg.InputText(
-            key='-pwd-', password_char='*', font=10)],
-        [sg.Button('Login')]
-    ]
-
-    layout_graph = [
-        [sg.Text("Gráfico estudo proteção MT", font=10)],
-        [sg.Button('Gerar'), sg.Button('Salvar')]
-    ]
-
-    window = sg.Window("Login", layout)
-    window_graph = sg.Window("Gráfico", layout_graph)
-
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED:
-            break
+    def validate_login(username, password):
+        if username.get() and password.get() == passwords:
+            open_window()
         else:
-            if event == "Login":
-                if values['-usrnm-'] in logins and values['-pwd-'] == password:
-                    window.close()
-                    while True:
-                        event_graph, values_graph = window_graph.read()
-                        if event_graph == sg.WIN_CLOSED:
-                            break
-                        elif event_graph == "Gerar":
-                            sheet_id = login(values['-usrnm-'])
-                            sg.popup_auto_close(
-                                "Aguarde o gráfico ser gerado.")
-                            format_values(CELLS, sheet_id)
-                        elif event_graph == "Salvar":
-                            sheet_id = login(values['-usrnm-'])
-                            sg.popup_auto_close("Aguarde o gráfico ser upado.")
-                            upload_drive(sheet_id)
-                elif values['-usrnm-'] not in logins or values['-pwd-'] != password:
-                    sg.popup("Login ou senha inválida. Tente novamente")
+            win = Toplevel()
+            win.title("Erro")
+            Label(win, text= "Usuário ou senha incorreta...").pack(pady=20)
+            win.after(2000, lambda: win.destroy())
+            sv_ttk.set_theme("light")
+            win.mainloop()
+
+    def open_window():
+        new_window = Toplevel()
+        new_window.transient(root)
+        new_window.focus_force()
+        new_window.grab_set()
+        new_window.title("Coordenograma Estudo de Proteção MT")
+        new_window.geometry("400x200")
+        new_window.resizable(width=False, height=False)
+
+        image = PhotoImage(file="grupo_logo.png")
+        image = image.subsample(2, 2)
+        background_image = Label(new_window, image=image, borderwidth=30)
+        background_image.pack()
+
+        show_button = Button(new_window, text="Gerar", font=40,
+                             width=15, command=format_values).place(x=20, y=150)
+        save_button = Button(new_window, text="Salvar", font=40,
+                             width=15, command=upload_drive).place(x=205, y=150)
+
+        sv_ttk.set_theme("light")
+        new_window.mainloop()
+        
+
+    global username
+    root = Tk()
+    root.title("Login Estudo de Proteção MT")
+    root.geometry("600x300")
+    root.resizable(width=False, height=False)
+
+    image = PhotoImage(file="grupo_logo.png")
+    image = image.subsample(2, 2)
+    background_image = Label(root, image=image, borderwidth=30)
+    background_image.pack()
+
+    username_label = Label(root, text="Usuário", font=40).place(x=40, y=150)
+    username = StringVar()
+    username_entry = Entry(root, textvariable=username,
+                           font=40, width=45).place(x=110, y=150)
+
+    password_label = Label(root, text="Senha", font=40).place(x=40, y=200)
+    password = StringVar()
+    password_entry = Entry(root, textvariable=password,
+                           show='*', font=40, width=45).place(x=110, y=200)
+
+    validate_login = partial(validate_login, username, password)
+
+    login_button = Button(root, text="Entrar", font=40, width=50,
+                          command=lambda:validate_login()).place(x=40, y=250)
+
+    sv_ttk.set_theme("light")
+    root.mainloop()
 
 
-def login(numero):
-    if numero == "1":
-        SAMPLE_SPREADSHEET_ID = ids[0]
-    elif numero == "2":
-        SAMPLE_SPREADSHEET_ID = ids[1]
-    elif numero == "3":
-        SAMPLE_SPREADSHEET_ID = ids[2]
-    elif numero == "4":
-        SAMPLE_SPREADSHEET_ID = ids[3]
-    elif numero == "5":
-        SAMPLE_SPREADSHEET_ID = ids[4]
-
-    return SAMPLE_SPREADSHEET_ID
+def login(number):
+    if number == "1":
+        return ids[0]
+    elif number == "2":
+        return ids[1]
+    elif number == "3":
+        return ids[2]
+    elif number == "4":
+        return ids[3]
+    elif number == "5":
+        return ids[4]
 
 
 def conect_api():
@@ -154,7 +180,7 @@ def conect_api():
     sheet = service.spreadsheets()
 
 
-def format_values(cells, sheet_id):
+def format_values():
     x_fase_montante = []
     y_fase_montante = []
     x_neutro_montante = []
@@ -188,17 +214,15 @@ def format_values(cells, sheet_id):
         x_51_gs_montante, y_51_gs_montante, x_51_gs_jusante, y_51_gs_jusante, x_elo, y_elo
     ]
 
+    sheet_id = login(username.get())
     i = 0
-    for i in range(len(cells)):
+    for i in range(len(CELLS)):
         result = sheet.values().get(spreadsheetId=sheet_id,
-                                    range=cells[i]).execute()
+                                    range=CELLS[i]).execute()
         values = result.get('values', [])
 
-        for value in values:
-            if value:
-                PLOTS[i].append(str(value[0]).replace(',', '.'))
-            else:
-                pass
+        PLOTS[i] = [str(value[0]).replace(',', '.')
+                    for value in values if value]
 
         PLOTS[i] = list(map(float, PLOTS[i]))
 
@@ -254,23 +278,24 @@ def plot_data(data_values):
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax.grid(which='both', axis='both', linestyle='-')
-    fig.savefig(f"{title}_COORDENOGRAMA.png")
+    fig.savefig(f"{title}_COORDENOGRAMA.jpeg")
     plt.show()
 
 
-def upload_drive(sheet_id):
+def upload_drive():
     SAMPLE_RANGE_NAME = 'Dados!AF42'
+    sheet_id = login(username.get())
 
     result = sheet.values().get(spreadsheetId=sheet_id,
                                 range=SAMPLE_RANGE_NAME).execute()
     folder_value = result.get('values', [])
     folder_id = folder_value[0][0]
     folder = folder_id[39:]
-    
+
     if len(folder) > 33:
         folder = folder[4:]
 
-    upload_file_list = [f"{title}_COORDENOGRAMA.png"]
+    upload_file_list = [f"{title}_COORDENOGRAMA.jpeg"]
     for upload_file in upload_file_list:
         gfile = drive.CreateFile(
             {'parents': [{'id': folder}]})
