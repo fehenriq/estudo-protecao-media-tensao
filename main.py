@@ -88,7 +88,7 @@ def main():
         new_window.transient(root)
         new_window.focus_force()
         new_window.grab_set()
-        new_window.title("Coordenograma Estudo de Proteção MT")
+        new_window.title("Coordenograma | Estudo de Proteção MT")
         new_window.geometry("400x200")
         new_window.resizable(width=False, height=False)
 
@@ -108,7 +108,7 @@ def main():
 
     global username
     root = Tk()
-    root.title("Login Estudo de Proteção MT")
+    root.title("Login | Estudo de Proteção MT")
     root.geometry("600x300")
     root.resizable(width=False, height=False)
 
@@ -119,18 +119,15 @@ def main():
 
     username_label = Label(root, text="Usuário", font=40).place(x=40, y=150)
     username = StringVar()
-    username_entry = Entry(root, textvariable=username,
-                           font=40, width=45).place(x=110, y=150)
+    username_entry = Entry(root, textvariable=username, font=40, width=40).place(x=110, y=150)
 
     password_label = Label(root, text="Senha", font=40).place(x=40, y=200)
     password = StringVar()
-    password_entry = Entry(root, textvariable=password,
-                           show='*', font=40, width=45).place(x=110, y=200)
+    password_entry = Entry(root, textvariable=password, show='*', font=40, width=40).place(x=110, y=200)
 
     validate_login = partial(validate_login, username, password)
 
-    login_button = Button(root, text="Entrar", font=40, width=50,
-                          command=lambda:validate_login()).place(x=40, y=250)
+    login_button = Button(root, text="Entrar", font=40, width=46, command=lambda:validate_login()).place(x=40, y=250)
 
     sv_ttk.set_theme("light")
     root.mainloop()
@@ -221,8 +218,7 @@ def format_values():
                                     range=CELLS[i]).execute()
         values = result.get('values', [])
 
-        PLOTS[i] = [str(value[0]).replace(',', '.')
-                    for value in values if value]
+        PLOTS[i] = [str(value[0]).replace(',', '.') for value in values if value]
 
         PLOTS[i] = list(map(float, PLOTS[i]))
 
