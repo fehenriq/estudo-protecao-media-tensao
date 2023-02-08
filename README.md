@@ -12,7 +12,7 @@
 ## ✔️ Técnicas e tecnologias utilizadas
 - `Python`
 - `Matplotlib`
-- `PySimpleGUI`
+- `Tkinter`
 - `API do Google Sheets`
 - `API do Google Drive`
 
