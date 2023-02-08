@@ -80,7 +80,7 @@ def main():
             win.title("Erro")
             Label(win, text= "Usuário ou senha incorreta...").pack(pady=20)
             win.after(2000, lambda: win.destroy())
-            sv_ttk.set_theme("light")
+            # sv_ttk.set_theme("light")
             win.mainloop()
 
     def open_window():
@@ -102,7 +102,7 @@ def main():
         save_button = Button(new_window, text="Salvar", font=40,
                              width=15, command=upload_drive).place(x=205, y=150)
 
-        sv_ttk.set_theme("light")
+        # sv_ttk.set_theme("light")
         new_window.mainloop()
         
 
@@ -129,7 +129,7 @@ def main():
 
     login_button = Button(root, text="Entrar", font=40, width=46, command=lambda:validate_login()).place(x=40, y=250)
 
-    sv_ttk.set_theme("light")
+    # sv_ttk.set_theme("light")
     root.mainloop()
 
 
