@@ -26,7 +26,8 @@ ids = [
     "1b3KduQ6oO9Tr09WLuAA5wlMAi9rg-aBZaOH8WhF-MCk",
     "1RKZIwhEAFty8he_1bSIEc5LugZryUy8-fI0VcGAGsSw",
     "1LrxnhH94tWMGupTEGEqna9ZjlBc9U1YlU6Xb-T2rdTE",
-    "1Jr4txdLKzSGx1nO33XK2sMcqxJ95Y0wSPDDiJa0ra1Y"
+    "1Jr4txdLKzSGx1nO33XK2sMcqxJ95Y0wSPDDiJa0ra1Y",
+    "1leH--H-NLNYL_4YTNfXmNuVatE8njoKLRqKdOQbt198",
 ]
 
 
@@ -69,7 +70,7 @@ def main():
 
     conect_api()
 
-    logins = ["1", "2", "3", "4", "5"]
+    logins = ["1", "2", "3", "4", "5", "admin"]
     passwords = "web2023"
 
     def validate_login(username, password):
@@ -144,6 +145,8 @@ def login(number):
         return ids[3]
     elif number == "5":
         return ids[4]
+    elif number == "admin":
+        return ids[5]
 
 
 def conect_api():
