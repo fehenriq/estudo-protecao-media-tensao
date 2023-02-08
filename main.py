@@ -73,7 +73,7 @@ def main():
     passwords = "web2023"
 
     def validate_login(username, password):
-        if username.get() and password.get() == passwords:
+        if username.get() in logins and password.get() == passwords:
             open_window()
         else:
             win = Toplevel()
@@ -127,7 +127,7 @@ def main():
 
     validate_login = partial(validate_login, username, password)
 
-    login_button = Button(root, text="Entrar", font=40, width=46, command=lambda:validate_login()).place(x=40, y=250)
+    login_button = Button(root, text="Entrar", font=40, width=46, command=validate_login).place(x=40, y=250)
 
     # sv_ttk.set_theme("light")
     root.mainloop()
