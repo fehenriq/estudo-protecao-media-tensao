@@ -5,21 +5,17 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+from googleapiclient.http import MediaFileUpload
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FormatStrFormatter
 from tkinter import *
 from functools import partial
-import sv_ttk
 
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+SCOPES_DRIVE = ['https://www.googleapis.com/auth/drive']
+SCOPES_SHEETS = ['https://www.googleapis.com/auth/spreadsheets']
 SAMPLE_SPREADSHEET_ID = ""
-
-gauth = GoogleAuth()
-drive = GoogleDrive(gauth)
 
 ids = [
     "1mpdTK2TrMCdBXe6IuPfZtPNlXa1mWlVg7Lv27wao_yA",
@@ -34,7 +30,7 @@ ids = [
 def main():
     global sheet_id
     global CELLS
-    
+
     X_FASE_MONTANTE = 'Grafico!P18:P66'
     Y_FASE_MONTANTE = 'Grafico!Q18:Q66'
     X_NEUTRO_MONTANTE = 'Grafico!T18:T66'
@@ -79,9 +75,8 @@ def main():
         else:
             win = Toplevel()
             win.title("Erro")
-            Label(win, text= "Usuário ou senha incorreta...").pack(pady=20)
+            Label(win, text="Usuário ou senha incorreta...").pack(pady=20)
             win.after(2000, lambda: win.destroy())
-            # sv_ttk.set_theme("light")
             win.mainloop()
 
     def open_window():
@@ -103,9 +98,7 @@ def main():
         save_button = Button(new_window, text="Salvar", font=40,
                              width=15, command=upload_drive).place(x=205, y=150)
 
-        # sv_ttk.set_theme("light")
         new_window.mainloop()
-        
 
     global username
     root = Tk()
@@ -120,17 +113,19 @@ def main():
 
     username_label = Label(root, text="Usuário", font=40).place(x=40, y=150)
     username = StringVar()
-    username_entry = Entry(root, textvariable=username, font=40, width=40).place(x=110, y=150)
+    username_entry = Entry(root, textvariable=username,
+                           font=40, width=40).place(x=110, y=150)
 
     password_label = Label(root, text="Senha", font=40).place(x=40, y=200)
     password = StringVar()
-    password_entry = Entry(root, textvariable=password, show='*', font=40, width=40).place(x=110, y=200)
+    password_entry = Entry(root, textvariable=password,
+                           show='*', font=40, width=40).place(x=110, y=200)
 
     validate_login = partial(validate_login, username, password)
 
-    login_button = Button(root, text="Entrar", font=40, width=46, command=validate_login).place(x=40, y=250)
+    login_button = Button(root, text="Entrar", font=40,
+                          width=46, command=validate_login).place(x=40, y=250)
 
-    # sv_ttk.set_theme("light")
     root.mainloop()
 
 
@@ -154,18 +149,19 @@ def conect_api():
 
     creds = None
 
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists('token_sheets.json'):
+        creds = Credentials.from_authorized_user_file(
+            'token_sheets.json', SCOPES_SHEETS)
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'client_secrets.json', SCOPES)
+                'client_secrets.json', SCOPES_SHEETS)
             creds = flow.run_local_server(port=0)
 
-        with open('token.json', 'w') as token:
+        with open('token_sheets.json', 'w') as token:
             token.write(creds.to_json())
 
     try:
@@ -221,7 +217,8 @@ def format_values():
                                     range=CELLS[i]).execute()
         values = result.get('values', [])
 
-        PLOTS[i] = [str(value[0]).replace(',', '.') for value in values if value]
+        PLOTS[i] = [str(value[0]).replace(',', '.')
+                    for value in values if value]
 
         PLOTS[i] = list(map(float, PLOTS[i]))
 
@@ -288,18 +285,44 @@ def upload_drive():
     result = sheet.values().get(spreadsheetId=sheet_id,
                                 range=SAMPLE_RANGE_NAME).execute()
     folder_value = result.get('values', [])
-    folder_id = folder_value[0][0]
-    folder = folder_id[39:]
+    folder = folder_value[0][0]
+    folder_id = folder[39:]
 
-    if len(folder) > 33:
-        folder = folder[4:]
+    if len(folder_id) > 33:
+        folder_id = folder_id[4:]
 
-    upload_file_list = [f"{title}_COORDENOGRAMA.jpeg"]
-    for upload_file in upload_file_list:
-        gfile = drive.CreateFile(
-            {'parents': [{'id': folder}]})
-        gfile.SetContentFile(upload_file)
-        gfile.Upload()
+    file_name = f"{title}_COORDENOGRAMA.jpeg"
+    mime_type = 'image/jpeg'
+
+    creds = None
+
+    if os.path.exists('token_drive.json'):
+        creds = Credentials.from_authorized_user_file(
+            'token_drive.json', SCOPES_DRIVE)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'client_secrets.json', SCOPES_DRIVE)
+            creds = flow.run_local_server(port=0)
+
+        with open('token_drive.json', 'w') as token:
+            token.write(creds.to_json())
+
+    service = build('drive', 'v3', credentials=creds)
+
+    file_metadata = {
+        'name': file_name,
+        'parents': [folder_id]
+    }
+    media = MediaFileUpload(f'{file_name}', mimetype=mime_type)
+    file = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id'
+    ).execute()
 
 
 if __name__ == '__main__':
